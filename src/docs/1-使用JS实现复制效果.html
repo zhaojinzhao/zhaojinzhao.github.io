@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>使用JS实现赋值效果</title>
+</head>
+<body>
+	<div id="content">http://www.pdmall.net</div>
+	<div id="content2">http://www.pdmall.net2</div>
+	<button id="copy">复制</button>
+	<script>
+		var oCopy = document.getElementById('copy');
+		var oCotent = document.getElementById('content');
+		var oCotent2 = document.getElementById('content2');
+		
+		oCopy.onclick = function (ev) {
+			// 方式1：input复制操作---兼容IE7
+			/*var oInput = document.createElement('input');
+			oInput.value = oCotent.innerHTML;
+			document.body.appendChild(oInput);
+
+			// 选中输入框文本
+			oInput.select();
+
+			// 执行复制动作
+			document.execCommand('copy');
+
+			// 删除Input
+			document.body.removeChild(oInput);*/
+
+			// 方式2：通过getSection()方法
+			/*var oRange = document.createRange();
+			oRange.selectNode(oCotent);
+
+			// 添加选中区域
+			window.getSelection().addRange(oRange);
+
+			var oRange2 = document.createRange();
+			oRange2.selectNode(oCotent2);
+
+			// 添加选中区域
+			window.getSelection().addRange(oRange2);
+
+			// 执行复制命令
+			var successful = document.execCommand('copy');
+
+			console.log(successful);
+
+			// 移除选中的元素
+			window.getSelection().removeAllRanges();*/
+
+			// 方式3：使用clipboard
+			
+			document.addEventListener && document.addEventListener('copy', function (ev) { 
+				console.log(ev.clipboardData)
+				console.log(window.clipboardData)
+			});
+
+			document.execCommand('copy');
+		};
+	</script>
+</body>
+</html>

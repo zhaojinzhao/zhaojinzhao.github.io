@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+	<title>腾讯微博-插入话题效果</title>
+	<link rel="stylesheet" href="../libs/style/bootstrap-3.3.7.min.css">
+</head>
+<body>
+	<div class="container">
+		<h2 class="text-center">插入话题效果</h2>
+		<hr><h3>效果演示：</h3>
+		<div class="row">
+			<div class="col-md-6 col-md-offset-3">
+				<form action="javascript:;">
+					<div class="form-group">
+						<textarea id="message" class="form-control"></textarea>
+					</div>
+					<a href="javascript:;" id="insertTopic" class="btn btn-link">插入话题</a>
+				</form>
+			</div>
+		</div>
+		<hr><h3>实现过程：</h3>
+		<div class="row">
+			<div class="col-md-12">
+				<h4>腾讯微博效果：</h4>
+				<p><img src="../images/1-1.gif"></p>
+				<h4>兼容性：</h4>
+				<p>
+					chrome、firefox、360安全浏览器<small class="text-muted">（真不是打广告）</small>、IE7+<small class="text-muted">（IE6没测试，有兴趣的伙伴可以测试一下）</small>
+				</p>
+				<h4>开始分析：</h4>
+				<p>首先我们需要知道的是，页面中闪烁的光标其实就是宽度为0 的选区，也就是说选区的左右边界的重合形成了光标。</p>
+				<p>
+					在标准浏览器下实现插入话题的效果还是挺简单的，只需要通过textarea节点对象身上的setSelectionRange方法创建一个选区即可，我们可以从<a href="https://developer.mozilla.org/en-US/docs/Web/API/HTMLInputElement/setSelectionRange" target="_blank">MDN</a>网站上面查到该方法的介绍。
+				</p>
+				<pre>The HTMLInputElement.setSelectionRange() method sets the start and end positions of the current text selection in an &lt;input&gt; element.</pre>
+				<p>
+					翻译过来就是：setSelectionRange方法的作用就是在input元素中设置文本选区的开始和结束位置。
+				</p>
+				<p>使用方式：</p>
+				<pre>inputElement.setSelectionRange(selectionStart, selectionEnd, [optional] selectionDirection);</pre>
+				<p>selectionStart参数：文本选区的起始位置。下标从0开始</p>
+				<p>selectionEnd参数：文本选区的结束位置。</p>
+				<p>selectionDirection参数：范围的选择方向。可选值有"forward"、"backward"、"none"</p>
+				<p>实现代码如下：</p>
+<pre>
+// 获取<a href="javacript:;" class="btn btn-link">插入话题</a>按钮
+var oInsertTopic = document.getElementById('insertTopic');
+// 获取文本框
+var oMessage	 = document.getElementById('message');
+// 话题内容
+var sTopic       = '#输入话题标题#';
+oInsertTopic.onclick = function () {
+	// 设置内容
+	oMessage.value = sTopic;
+	// 文本框获取光标
+	oMessage.focus();
+	// 设置文本选区的开始位置和结束位置
+	oMessage.setSelectionRange(1, 7);
+}
+</pre>
+				<p>本以为就这么结束了，BUT！低版本的IE压根就不认识这个方法。好吧，继续寻寻觅觅，皇天不负苦心人，终于找到兼容低版本IE的解决方案。上代码：</p>
+<pre>
+var range = oMessage.createTextRange();
+range.collapse(true);
+range.moveEnd('character', end);
+range.moveStart('character', start);
+range.select();
+</pre>
+			<p>
+				createTextRange方法：创建文本选区对象。
+			</p>
+			<p>
+				collapse方法：合并左右边界。默认情况下，range的左边界为0，右边界为oMessage.value.length。该方法有一个布尔参数默认值为true，如果该参数为true，则将右边界合并到左边界的位置；如果参数为false，则将左边界合并到右边界所在的位置。左右边界重合，则可以显示光标。
+			</p>
+			<p>
+				moveStart方法：移动左侧边界。需要传入两个参数，第一个参数的可选值有character、word、sentence、textedit。这里我们根据字符进行偏移；第二个参数代表偏移量，正值则往右偏移，负值则往左偏移。
+			</p>
+			<p>
+				moveEnd方法：移动右侧边界。传入的参数和moveStart方法一样。
+			</p>
+			<p>
+				select方法：将选区对象包含的内容选中。
+			</p>
+			<p class="text-danger">注意：当我们使用了collapse方法以后，应先调用moveEnd方法，再调用moveStart方法。这两个方法的顺序不一样，结果不一样哦！</p>
+			<p>OK!，开始整合代码！</p>
+<pre>
+// 获取<a href="javacript:;" class="btn btn-link">插入话题</a>按钮
+var oInsertTopic = document.getElementById('insertTopic');
+// 获取文本框
+var oMessage	 = document.getElementById('message');
+// 话题内容
+var sTopic       = '#输入话题标题#';
+oInsertTopic.onclick = function () {
+	// 设置内容
+	oMessage.value = sTopic;
+	if(oMessage.setSelectionRange) {
+		// 文本框获取光标
+		oMessage.focus();
+		// 设置文本选区的开始位置和结束位置
+		oMessage.setSelectionRange(1, 7);
+	} else if(oMessage.createTextRange) { // 兼容低版本的IE
+		var range = oMessage.createTextRange();
+		range.collapse(true);
+		range.moveEnd('character', 7);
+		range.moveStart('character', 1);
+		range.select();
+	}
+}
+</pre>
+			<p>
+				到此，我们实现了最基本的插入话题效果！当然腾讯微博的效果比我们这个要复杂一点，比如说：<code>#输入话题标题#</code>这句话如果已经存在，则不应该插入新的语句，而是应该选中已存在的语句。再比如说，<code>#输入话题标题#</code>这句话应该插入到用户光标在输入框中的位置。
+			</p>
+			</div>
+		</div>
+	</div>
+	<script src="../common/cursor.js"></script>
+	<script>
+		var oInsertTopic = document.getElementById('insertTopic');
+		var oMessage	 = document.getElementById('message');
+		var cursor 		 = new Cursor(oMessage);
+		var sTopic		 = '#输入话题标题#';
+		oInsertTopic.onclick = function () {
+			var start = 0;
+			var end   = 0;
+			var index = -1;
+			var val   = oMessage.value;
+			// 判断输入框是否为空
+			if(val == '') {
+				oMessage.value = sTopic;
+				start = 1;
+				end = -1;
+			}
+			// 判断话题是否已存在
+			else if( (index = val.indexOf(sTopic)) !== -1) {
+
+				start = index + 1;
+				end = index + sTopic.length - 1;
+			}
+			// 从光标的位置插入新的话题
+			else {
+				// 获取光标所在位置
+				index = cursor.getCursorPosition();
+				oMessage.value = val.substring(0, index) + sTopic + val.substring(index);
+
+				start = index + 1;
+				end = index + sTopic.length - 1;
+			}
+
+			cursor.setCursorSelectText(start, end);
+
+			// cursor.setCursorPosition(2);
+			// cursor.setCursorSelectText(2, 5);
+			// alert(cursor.getCursorPosition());
+			// alert(cursor.getCursorSelectText());
+		};
+	</script>
+</body>
+</html>

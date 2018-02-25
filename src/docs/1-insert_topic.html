@@ -4,12 +4,13 @@
 	<meta charset="UTF-8">
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>腾讯微博-插入话题效果</title>
+	<link rel="stylesheet" href="../style/common.css">
 	<link rel="stylesheet" href="../libs/style/bootstrap-3.3.7.min.css">
 </head>
 <body>
 	<div class="container">
 		<h2 class="text-center">插入话题效果</h2>
-		<hr><h3>效果演示：</h3>
+		<hr><h3>实现效果：</h3>
 		<div class="row">
 			<div class="col-md-6 col-md-offset-3">
 				<form action="javascript:;">
@@ -23,8 +24,8 @@
 		<hr><h3>实现过程：</h3>
 		<div class="row">
 			<div class="col-md-12">
-				<h4>腾讯微博效果：</h4>
-				<p><img src="../images/1-1.gif"></p>
+				<h4>腾讯微博效果演示：</h4>
+				<p><img src="../images/1-1.gif" style="max-width: 100%;"></p>
 				<h4>兼容性：</h4>
 				<p>
 					chrome、firefox、360安全浏览器<small class="text-muted">（真不是打广告）</small>、IE7+<small class="text-muted">（IE6没测试，有兴趣的伙伴可以测试一下）</small>
@@ -109,11 +110,95 @@ oInsertTopic.onclick = function () {
 	}
 }
 </pre>
-			<p>
-				到此，我们实现了最基本的插入话题效果！当然腾讯微博的效果比我们这个要复杂一点，比如说：<code>#输入话题标题#</code>这句话如果已经存在，则不应该插入新的语句，而是应该选中已存在的语句。再比如说，<code>#输入话题标题#</code>这句话应该插入到用户光标在输入框中的位置。
-			</p>
+				<p>
+					到此，我们实现了最基本的插入话题效果！当然腾讯微博的效果比我们这个要复杂一点，比如说：<code>#输入话题标题#</code>这句话如果已经存在，则不应该插入新的语句，而是应该选中已存在的语句。再比如说，<code>#输入话题标题#</code>这句话应该插入到用户光标在输入框中的位置。具体功能实现可右键查看源代码！
+				</p>
 			</div>
 		</div>
+		<hr><h3>在输入框中的光标操作：</h3>
+		<div class="row">
+			<div class="col-md-12">
+				<p>
+					我把在输入框中常用的四个光标操作（获取光标位置、设置光标位置、获取选区内容、设置选区内容）具体的实现代码封装好了。代码如下：
+				</p>
+<pre>
+(function () {
+	var Cursor = function (el) {
+		this.el = el;
+	};
+
+	Cursor.prototype = {
+		constructor: Cursor,
+		getCursorPosition: function () { // 获取光标位置
+			var start = 0;
+			if(document.selection) {
+				// 获取光标（这句不能少）
+				this.el.focus();
+				var range = document.selection.createRange();
+				// 复制一份
+				var sr = range.duplicate();
+				sr.moveToElementText(this.el);
+				sr.setEndPoint('EndToEnd', range);
+
+				start = sr.text.length - range.text.length;
+			} else if(this.el.selectionStart) {
+				start = this.el.selectionStart;
+			}
+			return start;
+		},
+		setCursorPosition: function (pos) { // 设置光标位置
+			this.setCursorSelectText(pos, pos);
+		},
+		setCursorSelectText: function (start, end) { // 设置光标选中文本
+			// 开始位置支持小于0
+			if(start < 0) {
+				start = this.el.value.length + start;
+			}
+			// 结束位置支持小于0
+			if(end < 0) {
+				end = this.el.value.length + end;
+			}
+			// 如果开始位置大于结束位置则交换位置
+			if(start > end) {
+				var temp = start;
+				start = end;
+				end = temp;
+			}
+
+			if(this.el.setSelectionRange) {
+				this.el.focus();
+				this.el.setSelectionRange(start, end);
+			} else if(this.el.createTextRange) { // 兼容IE
+				var range = this.el.createTextRange();
+				range.collapse(true);
+				range.moveEnd('character', end);
+				range.moveStart('character', start);
+				range.select();
+			}
+		},
+		getCursorSelectText: function () { // 获取光标选中文本
+			var text = '';
+			if(document.selection) { // 只有IE6-10支持
+				text = document.selection.createRange().text;
+			} else {
+				var start = this.el.selectionStart;
+				var end   = this.el.selectionEnd;
+				text = this.el.value.substring(start, end);
+			}
+			return text;
+		}
+	};
+
+	// 注册全局变量
+	window.Cursor = Cursor;
+})();
+</pre>
+				<p>
+					现在可以通过这些代码就可以在输入框中操作光标了。
+				</p>
+			</div>
+		</div>
+		<hr><div class="over">完</div>
 	</div>
 	<script src="../common/cursor.js"></script>
 	<script>

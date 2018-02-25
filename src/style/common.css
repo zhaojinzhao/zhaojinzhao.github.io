@@ -1,0 +1,9 @@
+.over {
+	margin: 10px auto;
+	width: 80px;
+	line-height: 80px;
+	text-align: center;
+	border-radius: 50%;
+	font-size: 24px;
+	border: 1px solid #ccc;
+}

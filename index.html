@@ -5,6 +5,20 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 	<title>赵进召的个人博客</title>
 	<link rel="stylesheet" href="src/libs/style/bootstrap-3.3.7.min.css">
+	<style type="text/css">
+		.list p {
+			display: block;
+			height: 14px;
+			line-height: 14px;
+		}
+		.list a {
+			display: block;
+		}
+		.list a:hover{
+			color: #337ab7;
+			text-decoration: none;
+		}
+	</style>
 </head>
 <body>
 	<div class="container">
@@ -16,9 +30,21 @@
 		</div>
 		<hr>
 		<h3>JS案例</h3>
-		<p>
-			<a href="src/docs/1-insert_topic.html" target="_blank">腾讯微博-插入话题效果</a>
-		</p>
+		<div class="list">
+			<p>
+				<a href="src/docs/1-insert_topic.html" target="_blank">腾讯微博-插入话题效果</a>
+			</p>
+		</div>
 	</div>
+	<script src="src/utils/tween.js"></script>
+	<script src="src/utils/common.js"></script>
+	<script src="src/utils/stringText.js"></script>
+	<script>
+		var aListP = document.querySelectorAll('.list p a');
+
+		for(var i = 0; i < aListP.length; i++) {
+			new StringText(aListP[i]);
+		}
+	</script>
 </body>
 </html>
